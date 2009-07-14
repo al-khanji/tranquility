@@ -1,0 +1,51 @@
+Codename Tranquility
+--------------------
+
+A new desktop coupled tightly to Linux and X.
+
+Primary goals:
+
+ o Simplicity
+ o Versatility
+ o Performance
+ o I18N/L10N
+ o Integrate best of breed technology into new whole
+  o Qt
+  o Tracker
+  o Nepomuk
+  o Akonadi
+  o FUSE
+  o wicd/connman
+
+Secondary Goals:
+
+ o Produce first grade desktop utilities
+  o File Manager
+  o Web Browser (integrate Arora/Rekonq?)
+  o Printer Manager
+  o Media Player
+ o Produce first grade utility libraries
+  o FUSE integration in desktop and Qt
+  o Desktop search
+  o Contacts
+
+Philosophy and Justification
+----------------------------
+
+The two biggest desktops today, GNOME and KDE, have become juggernauts going
+into specific directions. GNOME strives for simplicity at the expense of
+customization and underlying technology. KDE has the technological advantage,
+but is pervaded by bad design. Both desktops have made questionable technical
+choices - the use of DBUS for inter-client communication in lieu of an X-based
+solution for instance. Today I doubt it is possible to make either desktop
+approach design of their software much differently.
+
+Tranquility shall strive for excellence in the following areas:
+
+ o Design - simple, clean design. To facilitate this, all UI changes shall be
+   reviewed thoroughly before inclusion in the upstream repository. Any flaws
+   shall be fixed before such inclusion.
+ o Technology - simple, clean design. Beware of over-engineered solutions. In
+   general, always remember the YAGNI rule. All API is suspect to change,
+   except if otherwise guaranteed in the documentation.
+
