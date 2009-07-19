@@ -39,28 +39,31 @@ Client::Client(WId win, Application* app)
     m_frame = new Frame(this);
     m_frame->installEventFilter(this);
 
-    XReparentWindow(QX11Info::display(), m_window, m_frame->winId(), 0, 0);
-    XSelectInput(QX11Info::display(), m_frame->winId(), KeyPressMask
-                                                      | KeyReleaseMask
-                                                      | ButtonPressMask
-                                                      | ButtonReleaseMask
-                                                      | KeymapStateMask
-                                                      | ButtonMotionMask
-                                                      | PointerMotionMask
-                                                      | EnterWindowMask
-                                                      | LeaveWindowMask
-                                                      | FocusChangeMask
-                                                      | VisibilityChangeMask
-                                                      | ExposureMask
-                                                      | StructureNotifyMask
-                                                      | SubstructureRedirectMask
-                                                      | SubstructureNotifyMask);
+    QX11Info x;
+    XSetWindowBorderWidth(x.display(), m_window, 0);
+    XSetWindowBorderWidth(x.display(), m_frame->winId(), 0);
+    XReparentWindow(x.display(), m_window, m_frame->winId(), 0, 0);
+    XSelectInput(x.display(), m_frame->winId(), KeyPressMask
+                                                | KeyReleaseMask
+                                                | ButtonPressMask
+                                                | ButtonReleaseMask
+                                                | KeymapStateMask
+                                                | ButtonMotionMask
+                                                | PointerMotionMask
+                                                | EnterWindowMask
+                                                | LeaveWindowMask
+                                                | FocusChangeMask
+                                                | VisibilityChangeMask
+                                                | ExposureMask
+                                                | StructureNotifyMask
+                                                | SubstructureRedirectMask
+                                                | SubstructureNotifyMask);
 
     XWindowAttributes wa;
-    if (XGetWindowAttributes(QX11Info::display(), m_window, &wa)) {
+    if (XGetWindowAttributes(x.display(), m_window, &wa)) {
         m_frame->setClientSize(QSize(wa.width, wa.height));
         QRect r = m_frame->clientArea();
-        XMoveResizeWindow(QX11Info::display(), m_window, r.x(), r.y(),
+        XMoveResizeWindow(x.display(), m_window, r.x(), r.y(),
                           r.width(), r.height());
     }
 }

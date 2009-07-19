@@ -111,8 +111,7 @@ bool Application::x11EventFilter(XEvent* e)
         case DestroyNotify:
             id = e->xdestroywindow.window;
             if (m_clients.contains(id)) {
-                Client* c = m_clients.take(id);
-                delete c;
+                delete m_clients.take(id);
                 return true;
             } else if (m_unmanaged.contains(id)) {
                 m_unmanaged.remove(id);
