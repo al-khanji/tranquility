@@ -104,6 +104,8 @@ bool Application::x11EventFilter(XEvent* e)
                 e->xconfigurerequest.value_mask &= (CWX|CWY|CWWidth|CWHeight);
                 XConfigureWindow(x.display(), id,
                                  e->xconfigurerequest.value_mask, &wc);
+            } else {
+                m_clients[id]->configure(&e->xconfigurerequest);
             }
             return true;
             break;
@@ -159,6 +161,7 @@ void Application::startWindowManagement()
     XSelectInput(x.display(), x.appRootWindow(), KeyPressMask
                                                  | PropertyChangeMask
                                                  | ColormapChangeMask
+                                                 | StructureNotifyMask
                                                  | SubstructureRedirectMask
                                                  | SubstructureNotifyMask
                                                  | FocusChangeMask

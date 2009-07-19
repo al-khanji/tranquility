@@ -23,48 +23,47 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "client.h"
-#include "frame.h"
-
 #include <QX11Info>
 #include <QMouseEvent>
 
-#include <X11/Xlib.h>
+#include "client.h"
+#include "frame.h"
 
 Client::Client(WId win, Application* app)
 : m_window(win)
 , m_frame(0)
 , m_app(app)
 {
+    qDebug("WHEE A NEW FRAME");
     m_frame = new Frame(this);
     m_frame->installEventFilter(this);
 
     QX11Info x;
+    XWindowAttributes wa;
+
     XSetWindowBorderWidth(x.display(), m_window, 0);
     XSetWindowBorderWidth(x.display(), m_frame->winId(), 0);
+    XAddToSaveSet(x.display(), m_window);
     XReparentWindow(x.display(), m_window, m_frame->winId(), 0, 0);
-    XSelectInput(x.display(), m_frame->winId(), KeyPressMask
+    XSelectInput(x.display(), m_frame->winId(), SubstructureRedirectMask
+                                                | SubstructureNotifyMask
+                                                | KeyPressMask
                                                 | KeyReleaseMask
                                                 | ButtonPressMask
                                                 | ButtonReleaseMask
                                                 | KeymapStateMask
                                                 | ButtonMotionMask
                                                 | PointerMotionMask
-                                                | EnterWindowMask
+// Why does EnterWindowMask break stuff?
+//                                                 | EnterWindowMask
                                                 | LeaveWindowMask
-                                                | FocusChangeMask
-                                                | VisibilityChangeMask
                                                 | ExposureMask
+                                                | PropertyChangeMask
                                                 | StructureNotifyMask
-                                                | SubstructureRedirectMask
-                                                | SubstructureNotifyMask);
-
-    XWindowAttributes wa;
+);
     if (XGetWindowAttributes(x.display(), m_window, &wa)) {
         m_frame->setClientSize(QSize(wa.width, wa.height));
-        QRect r = m_frame->clientArea();
-        XMoveResizeWindow(x.display(), m_window, r.x(), r.y(),
-                          r.width(), r.height());
+        resizeClient();
     }
 }
 
@@ -79,6 +78,51 @@ void Client::map()
     QX11Info x;
     XMapWindow(x.display(), m_frame->winId());
     XMapWindow(x.display(), m_window);
+}
+
+void Client::configure(XConfigureRequestEvent* e)
+{
+    QRect r = m_frame->clientArea();
+    r.translate(m_frame->pos());
+
+    if (e->value_mask & CWX) {
+        r.setX(e->x);
+    }
+    if (e->value_mask & CWY) {
+        r.setX(e->y);
+    }
+    if (e->value_mask & CWWidth) {
+        r.setWidth(e->width);
+    }
+    if (e->value_mask & CWHeight) {
+        r.setHeight(e->height);
+    }
+
+    if (e->value_mask & (CWWidth | CWHeight)) {
+        m_frame->setClientSize(r.size());
+        resizeClient();
+    }
+
+    if (e->value_mask & (CWX | CWY)) {
+        QPoint target = r.topLeft();
+        target -= m_frame->clientArea().topLeft();
+        m_frame->move(target);
+//         XMoveWindow(QX11Info::display(), m_frame->winId(),
+//                     target.x(), target.y());
+    }
+
+    XConfigureEvent ce;
+    ce.type = ConfigureNotify;
+    ce.event = m_window;
+    ce.window = m_window;
+    ce.x = r.x();
+    ce.y = r.y();
+    ce.width = r.width();
+    ce.height = r.height();
+    ce.above = None;
+    ce.border_width = ce.override_redirect = 0;
+    XSendEvent(QX11Info::display(), m_window, False, StructureNotifyMask,
+               reinterpret_cast<XEvent*>(&ce));
 }
 
 bool Client::eventFilter(QObject* watched, QEvent* event)
@@ -97,6 +141,13 @@ bool Client::eventFilter(QObject* watched, QEvent* event)
     }
 
     return QObject::eventFilter(watched, event);
+}
+
+void Client::resizeClient()
+{
+    QRect r = m_frame->clientArea();
+    XMoveResizeWindow(QX11Info::display(), m_window, r.x(), r.y(),
+                      r.width(), r.height());
 }
 
 #include "client.moc"

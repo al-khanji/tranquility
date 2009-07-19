@@ -27,6 +27,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 #define CLIENT_H
 
 #include <QWidget>
+#include <X11/Xlib.h>
 
 class Frame;
 class Application;
@@ -39,6 +40,8 @@ class Client : public QObject
         ~Client();
         void map();
 
+        void configure(XConfigureRequestEvent* e);
+
     protected:
         bool eventFilter(QObject* watched, QEvent* event);
 
@@ -46,6 +49,8 @@ class Client : public QObject
         WId m_window;
         Frame* m_frame;
         Application* m_app;
+
+        void resizeClient();
 };
 
 #endif // CLIENT_H
