@@ -23,10 +23,29 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "application.h"
+#ifndef CLIENT_H
+#define CLIENT_H
 
-int main(int argc, char** argv)
+#include <QWidget>
+
+class Frame;
+class Application;
+
+class Client : public QObject
 {
-    Application app(argc, argv);
-    return app.exec();
-}
+    Q_OBJECT
+    public:
+        Client(WId win, Application* app);
+        ~Client();
+        void map();
+
+    protected:
+        bool eventFilter(QObject* watched, QEvent* event);
+
+    private:
+        WId m_window;
+        Frame* m_frame;
+        Application* m_app;
+};
+
+#endif // CLIENT_H

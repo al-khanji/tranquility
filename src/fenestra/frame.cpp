@@ -23,10 +23,22 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "application.h"
+#include "frame.h"
+#include "client.h"
 
-int main(int argc, char** argv)
+Frame::Frame(Client* c)
+: QWidget()
+, m_client(c)
+{}
+
+void Frame::setClientSize(QSize s)
 {
-    Application app(argc, argv);
-    return app.exec();
+    resize(s);
 }
+
+QRect Frame::clientArea() const
+{
+    return QRect(0, 10, width(), height() + 10);
+}
+
+#include "frame.moc"

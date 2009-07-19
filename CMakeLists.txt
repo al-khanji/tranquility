@@ -1,6 +1,9 @@
 project(tranquility)
 cmake_minimum_required(VERSION 2.6)
 
+find_package(X11 REQUIRED)
+include_directories(${X11_INCLUDE_DIR})
+
 find_package(Qt4 4.5 COMPONENTS QtCore QtGui REQUIRED)
 include(${QT_USE_FILE})
 
