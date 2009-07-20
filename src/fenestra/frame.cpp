@@ -38,7 +38,7 @@ void Frame::setClientSize(QSize s)
 
 QRect Frame::clientArea() const
 {
-    return QRect(0, 10, width(), height() + 10);
+    return QRect(0, 10, width(), height() - 10);
 }
 
 #include "frame.moc"
