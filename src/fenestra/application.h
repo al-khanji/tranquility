@@ -86,6 +86,8 @@ class Application : public QApplication
     private:
         void internStdAtoms();
         void queryExtensions();
+        void manageExistingWindows();
+
         QVector<Atom> m_atoms;
         QVector<QPair<int, int> > m_extensions;
         QHash<WId, Client*> m_clients;
