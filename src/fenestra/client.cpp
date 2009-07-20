@@ -34,13 +34,13 @@ Client::Client(WId win, Application* app)
 , m_frame(0)
 , m_app(app)
 {
-    qDebug("WHEE A NEW FRAME");
     m_frame = new Frame(this);
     m_frame->installEventFilter(this);
 
     QX11Info x;
     XWindowAttributes wa;
 
+    XGetWindowAttributes(x.display(), m_window, &wa);
     XSetWindowBorderWidth(x.display(), m_window, 0);
     XSetWindowBorderWidth(x.display(), m_frame->winId(), 0);
     XAddToSaveSet(x.display(), m_window);
@@ -59,12 +59,18 @@ Client::Client(WId win, Application* app)
                                                 | LeaveWindowMask
                                                 | ExposureMask
                                                 | PropertyChangeMask
-                                                | StructureNotifyMask
-);
-    if (XGetWindowAttributes(x.display(), m_window, &wa)) {
-        m_frame->setClientSize(QSize(wa.width, wa.height));
-        resizeClient();
+                                                | StructureNotifyMask);
+    m_frame->setClientSize(QSize(wa.width, wa.height));
+    resizeClient();
+    QPoint target(wa.x, wa.y);
+    target -= m_frame->clientArea().topLeft();
+    if (target.x() < 0) {
+        target.setX(0);
     }
+    if (target.y() < 0) {
+        target.setY(0);
+    }
+    XMoveWindow(x.display(), m_frame->winId(), target.x(), target.y());
 }
 
 Client::~Client()
