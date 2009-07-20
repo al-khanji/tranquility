@@ -45,21 +45,10 @@ Client::Client(WId win, Application* app)
     XSetWindowBorderWidth(x.display(), m_frame->winId(), 0);
     XAddToSaveSet(x.display(), m_window);
     XReparentWindow(x.display(), m_window, m_frame->winId(), 0, 0);
-    XSelectInput(x.display(), m_frame->winId(), SubstructureRedirectMask
-                                                | SubstructureNotifyMask
-                                                | KeyPressMask
-                                                | KeyReleaseMask
-                                                | ButtonPressMask
-                                                | ButtonReleaseMask
-                                                | KeymapStateMask
-                                                | ButtonMotionMask
-                                                | PointerMotionMask
-// Why does EnterWindowMask break stuff?
-//                                                 | EnterWindowMask
-                                                | LeaveWindowMask
-                                                | ExposureMask
-                                                | PropertyChangeMask
-                                                | StructureNotifyMask);
+    XSelectInput(x.display(), m_window, FocusChangeMask
+                                        | PropertyChangeMask
+                                        | StructureNotifyMask);
+
     m_frame->setClientSize(QSize(wa.width, wa.height));
     resizeClient();
     QPoint target(wa.x, wa.y);

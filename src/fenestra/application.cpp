@@ -42,6 +42,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 Application::Application(int& argc, char** argv)
 : QApplication(argc, argv)
 {
+    setQuitOnLastWindowClosed(false);
     internStdAtoms();
     QMetaObject::invokeMethod(this, "startWindowManagement",
                               Qt::QueuedConnection);
@@ -62,6 +63,7 @@ bool Application::x11EventFilter(XEvent* e)
     QX11Info x;
     XWindowAttributes wa;
     WId id;
+    bool ret = false;
 
     qDebug("%d", e->type);
 
@@ -69,12 +71,12 @@ bool Application::x11EventFilter(XEvent* e)
         case MapRequest:
             id = e->xmaprequest.window;
             if (!XGetWindowAttributes(x.display(), id, &wa)) {
-                return true;
+                ret = true;
             }
 
             if (wa.override_redirect) {
                 XMapRaised(x.display(), id);
-                return true;
+                ret = true;
             }
 
             if (!m_clients.contains(id)) {
@@ -82,7 +84,7 @@ bool Application::x11EventFilter(XEvent* e)
             }
 
             m_clients[id]->map();
-            return true;
+            ret = true;
             break;
 
         case MapNotify:
@@ -90,7 +92,7 @@ bool Application::x11EventFilter(XEvent* e)
             if (!m_clients.contains(id)) {
                 m_unmanaged.insert(id);
             }
-            return true;
+            ret = true;
             break;
 
         case ConfigureRequest:
@@ -107,27 +109,39 @@ bool Application::x11EventFilter(XEvent* e)
             } else {
                 m_clients[id]->configure(&e->xconfigurerequest);
             }
-            return true;
+            ret = true;
             break;
 
         case DestroyNotify:
             id = e->xdestroywindow.window;
             if (m_clients.contains(id)) {
                 delete m_clients.take(id);
-                return true;
+                ret = true;
             } else if (m_unmanaged.contains(id)) {
                 m_unmanaged.remove(id);
-                return true;
+                ret = true;
             }
             break;
 
         case FocusIn:
         case FocusOut:
-            return true;
+            ret = true;
             break;
     }
 
-    return false;
+    // XXX
+    // Why is this needed here? X(ephyr) seems to throw away our selection mask
+    // sometimes.
+    XSelectInput(x.display(), x.appRootWindow(), KeyPressMask
+                                                 | PropertyChangeMask
+                                                 | ColormapChangeMask
+                                                 | StructureNotifyMask
+                                                 | SubstructureRedirectMask
+                                                 | SubstructureNotifyMask
+                                                 | FocusChangeMask
+                                                 | ExposureMask);
+
+    return ret;
 }
 
 static bool initialising = false;
