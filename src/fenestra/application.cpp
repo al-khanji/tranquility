@@ -170,6 +170,7 @@ void Application::startWindowManagement()
     initialising = false;
 
     queryExtensions();
+    manageExistingWindows();
 }
 
 void Application::internStdAtoms()
@@ -218,6 +219,41 @@ void Application::queryExtensions()
         } else {
             qDebug("%s extension unavailable.", name);
             m_extensions[i] = QPair<int, int>(-1, -1);
+        }
+    }
+}
+
+void Application::manageExistingWindows()
+{
+    WId d1, d2;
+    WId* wins = 0;
+    unsigned int n;
+    XWindowAttributes wa;
+
+    QX11Info x;
+
+    if (XQueryTree(x.display(), x.appRootWindow(), &d1, &d2, &wins, &n)) {
+        for (int i = 0; i < n; i++) {
+            if (!XGetWindowAttributes(x.display(), wins[i], &wa)
+                || wa.override_redirect
+                || XGetTransientForHint(x.display(), wins[i], &d1)) {
+                continue;
+            }
+            if (wa.map_state == IsViewable) {
+                m_clients[wins[i]] = new Client(wins[i], this);
+                m_clients[wins[i]]->map();
+            }
+        }
+        for (int i = 0; i < n; i++) {
+            if (XGetWindowAttributes(x.display(), wins[i], &wa)
+                && XGetTransientForHint(x.display(), wins[i], &d1)
+                && wa.map_state == IsViewable) {
+                m_clients[wins[i]] = new Client(wins[i], this);
+                m_clients[wins[i]]->map();
+            }
+        }
+        if (wins) {
+            XFree(wins);
         }
     }
 }
