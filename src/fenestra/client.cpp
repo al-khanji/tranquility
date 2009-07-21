@@ -25,8 +25,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 #include <QX11Info>
 #include <QMouseEvent>
-#include <QDebug>
+#include <QHBoxLayout>
+#include <QSizeGrip>
 
+#include "application.h"
 #include "client.h"
 #include "frame.h"
 
@@ -35,6 +37,8 @@ Client::Client(WId win, Application* app)
 , m_frame(0)
 , m_app(app)
 , m_isMoving(false)
+, m_sizeGripLayout(0)
+, m_sizeGrip(0)
 {
     m_frame = new Frame(this);
     m_frame->installEventFilter(this);
@@ -62,6 +66,7 @@ Client::Client(WId win, Application* app)
         target.setY(0);
     }
     XMoveWindow(x.display(), m_frame->winId(), target.x(), target.y());
+    addSizeGrip();
 }
 
 Client::~Client()
@@ -73,7 +78,7 @@ Client::~Client()
 void Client::map()
 {
     QX11Info x;
-    XMapWindow(x.display(), m_frame->winId());
+    m_frame->show();
     XMapWindow(x.display(), m_window);
 }
 
@@ -147,6 +152,14 @@ bool Client::eventFilter(QObject* watched, QEvent* event)
         QPoint target = m_frame->pos() - m_mouseMovePosition + e->globalPos();
         m_frame->move(target);
         m_mouseMovePosition = e->globalPos();
+    } else if (event->type() == QEvent::Resize) {
+        resizeClient();
+        if (m_sizeGrip) {
+            qDebug("Repainting size grip...");
+            QPaintEvent e(m_sizeGrip->rect());
+            m_app->notify(m_sizeGrip, &e);
+//             m_sizeGrip->repaint();
+        }
     }
 
     return QObject::eventFilter(watched, event);
@@ -157,6 +170,23 @@ void Client::resizeClient()
     QRect r = m_frame->clientArea();
     XMoveResizeWindow(QX11Info::display(), m_window, r.x(), r.y(),
                       r.width(), r.height());
+}
+
+void Client::addSizeGrip()
+{
+    if (m_sizeGripLayout || m_sizeGrip) {
+        return;
+    }
+
+    m_sizeGripLayout = new QHBoxLayout(m_frame);
+    m_sizeGrip = new QSizeGrip(m_frame);
+    m_sizeGrip->setAttribute(Qt::WA_TranslucentBackground);
+    m_sizeGrip->setAttribute(Qt::WA_PaintOutsidePaintEvent);
+    m_sizeGripLayout->addWidget(m_sizeGrip, 0, Qt::AlignBottom|Qt::AlignRight);
+    m_sizeGripLayout->setContentsMargins(0, 0, 0, 0);
+    m_frame->setLayout(m_sizeGripLayout);
+    m_sizeGrip->raise();
+    m_sizeGrip->show();
 }
 
 #include "client.moc"

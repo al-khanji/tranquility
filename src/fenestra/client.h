@@ -31,6 +31,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 class Frame;
 class Application;
+class QHBoxLayout;
+class QSizeGrip;
 
 class Client : public QObject
 {
@@ -50,7 +52,14 @@ class Client : public QObject
         Frame* m_frame;
         Application* m_app;
 
+        bool m_isMoving;
+        QPoint m_mouseMovePosition;
+
+        QHBoxLayout* m_sizeGripLayout;
+        QSizeGrip* m_sizeGrip;
+
         void resizeClient();
+        void addSizeGrip();
 };
 
 #endif // CLIENT_H

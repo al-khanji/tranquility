@@ -43,6 +43,7 @@ Application::Application(int& argc, char** argv)
 : QApplication(argc, argv)
 {
     setQuitOnLastWindowClosed(false);
+    setAttribute(Qt::AA_NativeWindows);
     internStdAtoms();
     QMetaObject::invokeMethod(this, "startWindowManagement",
                               Qt::QueuedConnection);
