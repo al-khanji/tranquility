@@ -25,6 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 #include <QX11Info>
 #include <QMouseEvent>
+#include <QDebug>
 
 #include "client.h"
 #include "frame.h"
@@ -33,6 +34,7 @@ Client::Client(WId win, Application* app)
 : m_window(win)
 , m_frame(0)
 , m_app(app)
+, m_isMoving(false)
 {
     m_frame = new Frame(this);
     m_frame->installEventFilter(this);
@@ -102,8 +104,6 @@ void Client::configure(XConfigureRequestEvent* e)
         QPoint target = r.topLeft();
         target -= m_frame->clientArea().topLeft();
         m_frame->move(target);
-//         XMoveWindow(QX11Info::display(), m_frame->winId(),
-//                     target.x(), target.y());
     }
 
     XConfigureEvent ce;
@@ -127,12 +127,26 @@ bool Client::eventFilter(QObject* watched, QEvent* event)
         return QObject::eventFilter(watched, event);
     }
 
-    if (event->type() == QEvent::MouseButtonRelease) {
+    if (event->type() == QEvent::MouseButtonPress) {
         QMouseEvent* e = static_cast<QMouseEvent*>(event);
-        if (e->button() == Qt::MidButton) {
-//             stackLower();
-            qDebug("MIDBUTTON PRESSED!");
+        switch (e->button()) {
+            case Qt::LeftButton:
+                m_isMoving = true;
+                m_mouseMovePosition = e->globalPos();
+                break;
         }
+    } else if (event->type() == QEvent::MouseButtonRelease) {
+        QMouseEvent* e = static_cast<QMouseEvent*>(event);
+        switch (e->button()) {
+            case Qt::LeftButton:
+                m_isMoving = false;
+                break;
+        }
+    } else if (event->type() == QEvent::MouseMove && m_isMoving) {
+        QMouseEvent* e = static_cast<QMouseEvent*>(event);
+        QPoint target = m_frame->pos() - m_mouseMovePosition + e->globalPos();
+        m_frame->move(target);
+        m_mouseMovePosition = e->globalPos();
     }
 
     return QObject::eventFilter(watched, event);
