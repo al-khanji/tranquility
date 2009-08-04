@@ -273,4 +273,3 @@ void Application::manageExistingWindows()
     }
 }
 
-#include "application.moc"

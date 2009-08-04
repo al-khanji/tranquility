@@ -189,4 +189,3 @@ void Client::addSizeGrip()
     m_sizeGrip->show();
 }
 
-#include "client.moc"

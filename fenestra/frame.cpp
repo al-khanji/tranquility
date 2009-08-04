@@ -43,4 +43,3 @@ QRect Frame::clientArea() const
     return QRect(0, headerHeight, width(), height() - headerHeight);
 }
 
-#include "frame.moc"
