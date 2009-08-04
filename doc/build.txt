@@ -1,0 +1,13 @@
+All Tranquility software uses qmake as their build system. To build all the
+available software out of tree, do the following:
+
+ $ mkdir build
+ $ cd build
+ $ qmake ../tranquility.pro
+ $ make
+
+Some distributions choose to install qmake as qmake-qt4. Alternatively you can
+build any single software using the same approach by pointing qmake at their
+project (.pro) file. Building out of source in a separate build directory is
+recommended.
+
