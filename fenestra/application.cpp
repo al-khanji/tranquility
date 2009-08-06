@@ -214,11 +214,11 @@ void Application::queryExtensions()
     queryExtension(&XShapeQueryExtension, &XShapeQueryVersion);
     queryExtension(&XRRQueryExtension, &XRRQueryVersion);
     queryExtension(&XDamageQueryExtension, &XDamageQueryVersion);
-    queryExtension(&XDamageQueryExtension, &XCompositeQueryVersion);
+    queryExtension(&XCompositeQueryExtension, &XCompositeQueryVersion);
     queryExtension(&XFixesQueryExtension, &XFixesQueryVersion);
     queryExtension(&XRenderQueryExtension, &XRenderQueryVersion);
-    queryExtension(&XSyncQueryExtension, 0);
     queryExtension(&glXQueryExtension, &glXQueryVersion);
+    queryExtension(&XSyncQueryExtension, 0);
 }
 
 void Application::queryExtension(queryFunc query, versionFunc version)
