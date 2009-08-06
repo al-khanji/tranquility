@@ -62,7 +62,6 @@ bool Application::createClientWindow()
     connect(m_clientWindow, SIGNAL(error(QX11EmbedWidget::Error)),
             SLOT(embedError(QX11EmbedWidget::Error)));
     WId id;
-    bool ok;
     if (parseArgs(id)) {
         m_clientWindow->embedInto(id);
         m_clientWindow->setVisible(true);
@@ -78,6 +77,7 @@ void Application::embedError(QX11EmbedWidget::Error err)
         case QX11EmbedWidget::InvalidWindowID:
             std::cout << "Invalid window id passed" << std::endl;
             break;
+        case QX11EmbedWidget::Internal:
         case QX11EmbedWidget::Unknown:
             std::cout << "Fatal error inside Qt" << std::endl;
             break;

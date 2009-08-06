@@ -139,12 +139,16 @@ bool Client::eventFilter(QObject* watched, QEvent* event)
                 m_isMoving = true;
                 m_mouseMovePosition = e->globalPos();
                 break;
+            default:
+                break;
         }
     } else if (event->type() == QEvent::MouseButtonRelease) {
         QMouseEvent* e = static_cast<QMouseEvent*>(event);
         switch (e->button()) {
             case Qt::LeftButton:
                 m_isMoving = false;
+                break;
+            default:
                 break;
         }
     } else if (event->type() == QEvent::MouseMove && m_isMoving) {

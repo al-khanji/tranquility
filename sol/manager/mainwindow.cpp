@@ -49,7 +49,7 @@ void MainWindow::newTab()
 
 void MainWindow::embedWindow(WId id)
 {
-    qDebug("Embedding window %d", id);
+    qDebug("Embedding window %u", static_cast<unsigned int>(id));
     QX11EmbedContainer* c = new QX11EmbedContainer(this);
     c->show();
     connect(c, SIGNAL(clientIsEmbedded()), SLOT(clientEmbedded()));

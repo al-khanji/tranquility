@@ -148,6 +148,7 @@ bool Application::x11EventFilter(XEvent* e)
 static bool initialising = false;
 static int xErrorHandler(Display* d, XErrorEvent* e)
 {
+    Q_UNUSED(d);
     if (initialising
         && e->error_code == BadAccess
         && (e->request_code == X_ChangeWindowAttributes
@@ -248,7 +249,7 @@ void Application::manageExistingWindows()
     QX11Info x;
 
     if (XQueryTree(x.display(), x.appRootWindow(), &d1, &d2, &wins, &n)) {
-        for (int i = 0; i < n; i++) {
+        for (unsigned int i = 0; i < n; i++) {
             if (!XGetWindowAttributes(x.display(), wins[i], &wa)
                 || wa.override_redirect
                 || XGetTransientForHint(x.display(), wins[i], &d1)) {
@@ -259,7 +260,7 @@ void Application::manageExistingWindows()
                 m_clients[wins[i]]->map();
             }
         }
-        for (int i = 0; i < n; i++) {
+        for (unsigned int i = 0; i < n; i++) {
             if (XGetWindowAttributes(x.display(), wins[i], &wa)
                 && XGetTransientForHint(x.display(), wins[i], &d1)
                 && wa.map_state == IsViewable) {
