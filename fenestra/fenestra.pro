@@ -10,3 +10,4 @@ INCLUDEPATH += .
 # Input
 HEADERS += application.h client.h frame.h
 SOURCES += application.cpp client.cpp frame.cpp main.cpp
+LIBS += -lXrandr -lXdamage -lXcomposite -lXfixes -lXrender -lGL

@@ -28,6 +28,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 #include <QApplication>
 #include <QVector>
+#include <QList>
 #include <QPair>
 #include <QMetaEnum>
 #include <QHash>
@@ -73,9 +74,24 @@ class Application : public QApplication
             GLX,
             SYNC
         };
-
-        Atom atom(AtomId id) const;
-        QPair<int, int> extension(Extension) const;
+        struct ExtensionInfo {
+            ExtensionInfo(int ev, int er, int maj, int min) {
+                valid = true;
+                event = ev;
+                error = er;
+                major = maj;
+                minor = min;
+            }
+            ExtensionInfo() {
+                valid = false;
+                event = error = major = minor = 0;
+            }
+            bool valid;
+            int event;
+            int error;
+            int major;
+            int minor;
+        };
 
     protected:
         virtual bool x11EventFilter(XEvent* event);
@@ -86,10 +102,13 @@ class Application : public QApplication
     private:
         void internStdAtoms();
         void queryExtensions();
+        typedef Bool(*queryFunc)(Display *, int *, int *);
+        typedef Status(*versionFunc)(Display *, int *, int *);
+        void queryExtension(queryFunc query, versionFunc version);
         void manageExistingWindows();
 
         QVector<Atom> m_atoms;
-        QVector<QPair<int, int> > m_extensions;
+        QList<ExtensionInfo> m_extensions;
         QHash<WId, Client*> m_clients;
         QSet<WId> m_unmanaged;
 };

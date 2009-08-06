@@ -49,16 +49,6 @@ Application::Application(int& argc, char** argv)
                               Qt::QueuedConnection);
 }
 
-Atom Application::atom(AtomId id) const
-{
-    return m_atoms[id];
-}
-
-QPair<int, int> Application::extension(Extension ext) const
-{
-    return m_extensions[ext];
-}
-
 bool Application::x11EventFilter(XEvent* e)
 {
     QX11Info x;
@@ -219,24 +209,32 @@ void Application::queryExtensions()
         return;
     }
 
-    int enumId = metaObject()->indexOfEnumerator("Extension");
-    QMetaEnum extEnum = metaObject()->enumerator(enumId);
-    int count = extEnum.keyCount();
+    // this must happen in the same order as the Extension enum is declared
 
-    m_extensions.resize(count);
-    m_extensions.squeeze();
+    queryExtension(&XShapeQueryExtension, &XShapeQueryVersion);
+    queryExtension(&XRRQueryExtension, &XRRQueryVersion);
+    queryExtension(&XDamageQueryExtension, &XDamageQueryVersion);
+    queryExtension(&XDamageQueryExtension, &XCompositeQueryVersion);
+    queryExtension(&XFixesQueryExtension, &XFixesQueryVersion);
+    queryExtension(&XRenderQueryExtension, &XRenderQueryVersion);
+    queryExtension(&XSyncQueryExtension, 0);
+    queryExtension(&glXQueryExtension, &glXQueryVersion);
+}
 
-    for (int i = 0; i < count; i++) {
-        const char* name = extEnum.key(i);
-        int opcode, event, error;
-        if (XQueryExtension(QX11Info::display(), name, &opcode, &event, &error))
-        {
-            m_extensions[i] = QPair<int, int>(event, error);
-        } else {
-            qDebug("%s extension unavailable.", name);
-            m_extensions[i] = QPair<int, int>(-1, -1);
+void Application::queryExtension(queryFunc query, versionFunc version)
+{
+    QX11Info x;
+    int major, minor, error, event;
+    major = minor = error = event = 0;
+    ExtensionInfo ei;
+
+    if ((*query)(x.display(), &event, &error)) {
+        if (!version || (*version)(x.display(), &major, &minor)) {
+            ei = ExtensionInfo(event, error, major, minor);
         }
     }
+
+    m_extensions << ei;
 }
 
 void Application::manageExistingWindows()
