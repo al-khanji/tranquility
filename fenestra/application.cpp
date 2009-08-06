@@ -266,9 +266,10 @@ void Application::manageExistingWindows()
                 m_clients[wins[i]]->map();
             }
         }
-        if (wins) {
-            XFree(wins);
-        }
+    }
+
+    if (wins) {
+        XFree(wins);
     }
 }
 
