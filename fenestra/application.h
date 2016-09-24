@@ -62,7 +62,8 @@ class Application : public QApplication
             _NET_WM_WINDOW_TYPE_DESKTOP,
             _NET_WM_WINDOW_TYPE_DIALOG,
             _NET_WM_WINDOW_TYPE_SPLASH,
-            _NET_WM_WINDOW_TYPE_DND
+            _NET_WM_WINDOW_TYPE_DND,
+            WM_S1 // We only support single-screen X servers for now
         };
         enum Extension {
             SHAPE,
@@ -111,6 +112,7 @@ class Application : public QApplication
         QList<ExtensionInfo> m_extensions;
         QHash<WId, Client*> m_clients;
         QSet<WId> m_unmanaged;
+        WId m_windowManagerSelectionWindow;
 };
 
 #endif // APPLICATION_H

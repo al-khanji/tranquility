@@ -28,9 +28,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include <QHBoxLayout>
 #include <QSizeGrip>
 
+#include "frame.h"
 #include "application.h"
 #include "client.h"
-#include "frame.h"
 
 Client::Client(WId win, Application* app)
 : m_window(win)
@@ -50,7 +50,7 @@ Client::Client(WId win, Application* app)
     XSetWindowBorderWidth(x.display(), m_window, 0);
     XSetWindowBorderWidth(x.display(), m_frame->winId(), 0);
     XAddToSaveSet(x.display(), m_window);
-    XReparentWindow(x.display(), m_window, m_frame->winId(), 0, 0);
+    XReparentWindow(x.display(), m_window, m_frame->widget->winId(), 0, 0);
     XSelectInput(x.display(), m_window, FocusChangeMask
                                         | PropertyChangeMask
                                         | StructureNotifyMask);
@@ -79,7 +79,14 @@ void Client::map()
 {
     QX11Info x;
     m_frame->show();
+    XMapWindow(x.display(), m_frame->winId());
     XMapWindow(x.display(), m_window);
+}
+
+void Client::unmap()
+{
+    m_frame->hide();
+    XUnmapWindow(QX11Info::display(), m_frame->winId());
 }
 
 void Client::configure(XConfigureRequestEvent* e)
@@ -158,12 +165,6 @@ bool Client::eventFilter(QObject* watched, QEvent* event)
         m_mouseMovePosition = e->globalPos();
     } else if (event->type() == QEvent::Resize) {
         resizeClient();
-        if (m_sizeGrip) {
-            qDebug("Repainting size grip...");
-            QPaintEvent e(m_sizeGrip->rect());
-            m_app->notify(m_sizeGrip, &e);
-//             m_sizeGrip->repaint();
-        }
     }
 
     return QObject::eventFilter(watched, event);
@@ -182,8 +183,8 @@ void Client::addSizeGrip()
         return;
     }
 
-    m_sizeGripLayout = new QHBoxLayout(m_frame);
-    m_sizeGrip = new QSizeGrip(m_frame);
+    m_sizeGripLayout = new QHBoxLayout(m_frame->widget);
+    m_sizeGrip = new QSizeGrip(m_frame->widget);
     m_sizeGrip->setAttribute(Qt::WA_TranslucentBackground);
     m_sizeGrip->setAttribute(Qt::WA_PaintOutsidePaintEvent);
     m_sizeGripLayout->addWidget(m_sizeGrip, 0, Qt::AlignBottom|Qt::AlignRight);
@@ -192,4 +193,3 @@ void Client::addSizeGrip()
     m_sizeGrip->raise();
     m_sizeGrip->show();
 }
-

@@ -41,6 +41,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 Application::Application(int& argc, char** argv)
 : QApplication(argc, argv)
+, m_windowManagerSelectionWindow(0)
 {
     setQuitOnLastWindowClosed(false);
     setAttribute(Qt::AA_NativeWindows);
@@ -61,13 +62,15 @@ bool Application::x11EventFilter(XEvent* e)
     switch(e->type) {
         case MapRequest:
             id = e->xmaprequest.window;
+            ret = true;
+
             if (!XGetWindowAttributes(x.display(), id, &wa)) {
-                ret = true;
+                break;
             }
 
             if (wa.override_redirect) {
                 XMapRaised(x.display(), id);
-                ret = true;
+                break;
             }
 
             if (!m_clients.contains(id)) {
@@ -75,15 +78,16 @@ bool Application::x11EventFilter(XEvent* e)
             }
 
             m_clients[id]->map();
-            ret = true;
             break;
 
         case MapNotify:
             id = e->xmap.window;
             if (!m_clients.contains(id)) {
                 m_unmanaged.insert(id);
+            } else {
+                m_clients[id]->map();
+                ret = true;
             }
-            ret = true;
             break;
 
         case ConfigureRequest:
@@ -101,6 +105,15 @@ bool Application::x11EventFilter(XEvent* e)
                 m_clients[id]->configure(&e->xconfigurerequest);
             }
             ret = true;
+            break;
+
+        case UnmapNotify:
+            id = e->xunmap.window;
+            if (m_clients.contains(id)) {
+                m_clients[id]->unmap();
+            } else if (m_unmanaged.contains(id)) {
+                m_unmanaged.remove(id);
+            }
             break;
 
         case DestroyNotify:
@@ -175,6 +188,8 @@ void Application::startWindowManagement()
     syncX(); // trap any errors now
     initialising = false;
 
+    XSetSelectionOwner(x.display(), m_atoms[WM_S1],
+                       m_windowManagerSelectionWindow, CurrentTime);
     queryExtensions();
     manageExistingWindows();
 }

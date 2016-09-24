@@ -27,9 +27,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 #define FRAME_H
 
 #include <QWidget>
+#include "ui_frame.h"
+
 class Client;
 
-class Frame : public QWidget
+class Frame : public QWidget, public Ui_Frame
 {
     Q_OBJECT
     public:

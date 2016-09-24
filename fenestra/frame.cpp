@@ -26,20 +26,19 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "frame.h"
 #include "client.h"
 
-static const int headerHeight = 20;
-
 Frame::Frame(Client* c)
 : QWidget()
 , m_client(c)
-{}
+{
+    setupUi(this);
+}
 
 void Frame::setClientSize(QSize s)
 {
-    resize(s.width(), s.height() + headerHeight);
+    widget->resize(s.width(), s.height());
 }
 
 QRect Frame::clientArea() const
 {
-    return QRect(0, headerHeight, width(), height() - headerHeight);
+    return widget->rect();
 }
-

@@ -41,6 +41,7 @@ class Client : public QObject
         Client(WId win, Application* app);
         ~Client();
         void map();
+        void unmap();
 
         void configure(XConfigureRequestEvent* e);
 
